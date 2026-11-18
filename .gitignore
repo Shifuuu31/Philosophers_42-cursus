@@ -41,4 +41,8 @@ Thumbs.db
 *.log
 tempfile
 fails/
+
+# External Testers (cloned locally, not tracked)
+LazyPhilosophersTester/
+alientest_philosopher/
 42-philosophers-tester/

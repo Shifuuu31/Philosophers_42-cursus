@@ -32,7 +32,11 @@ $(OBJDIR):
 clean:
 				-clear
 				$(RM) -r $(OBJDIR)
-				@echo "\033[1m\033[31mObject files removed\033[37m"
+				$(RM) *.log tempfile philo_tsan
+				$(RM) -r fails
+				$(RM) $(ALIEN_DIR)/*.log
+				$(RM) -r $(DANTONIK_DIR)/fails $(DANTONIK_DIR)/tempfile
+				@echo "\033[1m\033[31mObject files and test logs removed\033[37m"
 
 fclean:			clean
 				$(RM) $(NAME)
