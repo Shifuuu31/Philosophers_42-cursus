@@ -18,6 +18,7 @@ static void	*thread_routine(void *philo)
 	t_info	*p;
 
 	p = (t_info *)philo;
+	ft_usleep_until(p->start);
 	if (p->n_philo == 1)
 	{
 		manage_philos(p, FORK_TAKEN);
@@ -26,7 +27,7 @@ static void	*thread_routine(void *philo)
 	}
 	if (p->id % 2 == 0)
 	{
-		philo_think(p);
+		manage_philos(p, THINK);
 		ft_usleep_until(p->start + (p->t_eat / 2));
 	}
 	while (1)
@@ -68,10 +69,28 @@ static int	error_manager(int code)
 	return (0);
 }
 
+// Spawn philosopher threads with synchronized start timestamps
+static int	init_threads(t_philo *info, pthread_t *thread_id)
+{
+	int	i;
+
+	i = -1;
+	info->start = ft_time() + (info->n_philo * 2) + 20;
+	while (++i < info->n_philo)
+	{
+		info->philo[i].start = info->start;
+		info->philo[i].last_meal = info->start;
+		info->err = pthread_create(&thread_id[i], NULL, thread_routine,
+				&info->philo[i]);
+		if (info->err)
+			return (0);
+	}
+	return (1);
+}
+
 // Main entry point
 int	main(int argc, char **argv)
 {
-	int			i;
 	t_philo		*info;
 	pthread_t	*thread_id;
 
@@ -83,17 +102,9 @@ int	main(int argc, char **argv)
 	thread_id = (pthread_t *)malloc(info->n_philo * sizeof(pthread_t));
 	if (!thread_id)
 		return (clean_data(info), error_manager(1));
-	i = -1;
-	info->start = ft_time();
-	while (++i < info->n_philo)
-	{
-		info->philo[i].start = info->start;
-		info->philo[i].last_meal = info->start;
-		info->err = pthread_create(&thread_id[i], NULL, thread_routine,
-				&info->philo[i]);
-		if (info->err)
-			return (free(thread_id), clean_data(info), error_manager(2));
-	}
+	if (!init_threads(info, thread_id))
+		return (free(thread_id), clean_data(info), error_manager(2));
 	free(thread_id);
+	ft_usleep_until(info->start);
 	return (check_philos(info));
 }

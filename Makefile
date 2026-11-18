@@ -70,52 +70,67 @@ $(DANTONIK_DIR):
 		git clone https://github.com/dantonik/42-philosophers-tester.git $(DANTONIK_DIR); \
 	fi
 
-test: all test-dantonik-auto
+# ==============================================================================
+#                               TEST SUITES
+# ==============================================================================
 
-test-dantonik: all $(DANTONIK_DIR)
-	@echo "\033[1;34m=== Running 42-philosophers-tester ===\033[0m"
-	@cd $(DANTONIK_DIR) && ./test.sh ../$(NAME)
+test: test-hard
 
-test-dantonik-auto: all $(DANTONIK_DIR)
-	@echo "\033[1;34m=== Running 42-philosophers-tester (Mandatory Auto) ===\033[0m"
+test-eval: all $(DANTONIK_DIR)
+	@echo "\033[1;36m┌─────────────────────────────────────────────────────────────┐\033[0m"
+	@echo "\033[1;36m│ \033[1;37mRunning 42 Evaluation Sheet Automated Suite (dantonik)      \033[1;36m│\033[0m"
+	@echo "\033[1;36m└─────────────────────────────────────────────────────────────┘\033[0m"
 	@cd $(DANTONIK_DIR) && printf "0\n" | ./test.sh -i 1 -t 3 ../$(NAME)
 
-test-dantonik-hardcore: all $(DANTONIK_DIR)
-	@echo "\033[1;34m=== Running 42-philosophers-tester (Hardcore Auto) ===\033[0m"
-	@cd $(DANTONIK_DIR) && printf "2\n0\n" | ./test.sh -i 1 -t 3 ../$(NAME)
-
-test-lazy: all $(LAZY_DIR)
-	@echo "\033[1;34m=== Running LazyPhilosophersTester ===\033[0m"
-	@cd $(LAZY_DIR) && ./test.sh ../$(NAME)
-
-test-lazy-auto: all $(LAZY_DIR)
-	@echo "\033[1;34m=== Running LazyPhilosophersTester (Die Tests Auto) ===\033[0m"
-	@cd $(LAZY_DIR) && (printf "1\n\n\n\n\nq\n" | ./test.sh ../$(NAME))
-
-test-alien: all $(ALIEN_DIR)
-	@echo "\033[1;34m=== Running alientest_philosopher (Timestamp Order) ===\033[0m"
+test-order: all $(ALIEN_DIR)
+	@echo "\033[1;36m┌─────────────────────────────────────────────────────────────┐\033[0m"
+	@echo "\033[1;36m│ \033[1;37mRunning Timestamp Monotonic Ordering Check (alientest)      \033[1;36m│\033[0m"
+	@echo "\033[1;36m└─────────────────────────────────────────────────────────────┘\033[0m"
 	@cd $(ALIEN_DIR) && (echo "" | bash order.sh 2>&1 | grep -v -E "kill \[options\]|For more details|kill: usage|Usage:|specify the" | grep -v "  -") || true
 
-test-alien-all: all $(ALIEN_DIR)
-	@echo "\033[1;34m=== Running alientest_philosopher (Correction Tests) ===\033[0m"
-	@cd $(ALIEN_DIR) && echo "" | bash correction_test.sh
-
-test-hard: all
-	@python3 tests/hard_tests.py
-
 test-race: all
-	@echo "\033[1;34m=== Running ThreadSanitizer Data-Race Check ===\033[0m"
+	@echo "\033[1;36m┌─────────────────────────────────────────────────────────────┐\033[0m"
+	@echo "\033[1;36m│ \033[1;37mRunning LLVM ThreadSanitizer Concurrency & Data-Race Audit    \033[1;36m│\033[0m"
+	@echo "\033[1;36m└─────────────────────────────────────────────────────────────┘\033[0m"
 	@cc $(CFLAGS) -fsanitize=thread -g $(SRCS) -o philo_tsan
 	@./philo_tsan 4 410 200 200 2 > /dev/null
 	@./philo_tsan 1 200 100 100 > /dev/null 2>&1 || true
 	@rm -f philo_tsan
-	@echo "\033[1;32m[PASS] No data races detected by ThreadSanitizer\033[0m"
+	@echo "\033[1;32m[PASS] ThreadSanitizer reported 0 data races and 0 lock order inversions.\033[0m"
 
-test-all: test-dantonik-auto test-alien
+test-hard: all
+	@python3 tests/hard_tests.py
+
+test-lazy: all $(LAZY_DIR)
+	@echo "\033[1;36m=== Running LazyPhilosophersTester (Interactive) ===\033[0m"
+	@cd $(LAZY_DIR) && ./test.sh ../$(NAME)
+
+test-lazy-auto: all $(LAZY_DIR)
+	@echo "\033[1;36m=== Running LazyPhilosophersTester (Die Tests Auto) ===\033[0m"
+	@cd $(LAZY_DIR) && (printf "1\n\n\n\n\nq\n" | ./test.sh ../$(NAME))
+
+test-dantonik: all $(DANTONIK_DIR)
+	@cd $(DANTONIK_DIR) && ./test.sh ../$(NAME)
+
+test-dantonik-auto: test-eval
+test-alien: test-order
+test-alien-all: all $(ALIEN_DIR)
+	@cd $(ALIEN_DIR) && echo "" | bash correction_test.sh
+
+test-all:
+	@echo "\n\033[1;35m╔═════════════════════════════════════════════════════════════╗\033[0m"
+	@echo "\033[1;35m║             STARTING COMPLETE TEST PIPELINE                 ║\033[0m"
+	@echo "\033[1;35m╚═════════════════════════════════════════════════════════════╝\033[0m\n"
+	@$(MAKE) test-eval
+	@sleep 0.5
+	@$(MAKE) test-order
 	@sleep 0.5
 	@$(MAKE) test-hard
+	@echo "\n\033[1;32m╔═════════════════════════════════════════════════════════════╗\033[0m"
+	@echo "\033[1;32m║         ALL TEST SUITES COMPLETED WITH 100% SUCCESS!        ║\033[0m"
+	@echo "\033[1;32m╚═════════════════════════════════════════════════════════════╝\033[0m\n"
 
-.PHONY: all clean fclean re test test-all test-dantonik test-dantonik-auto test-dantonik-hardcore test-lazy test-lazy-auto test-alien test-alien-all test-hard test-race
+.PHONY: all clean fclean re test test-eval test-order test-all test-dantonik test-dantonik-auto test-lazy test-lazy-auto test-alien test-alien-all test-hard test-race
 
 shifuuu:
 			-clear

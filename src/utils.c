@@ -12,15 +12,6 @@
 
 #include "philo.h"
 
-// Check whitespaces
-static int	escape_whitespaces(char c)
-{
-	if (c == 32 || c == '\t' || c == '\v'
-		|| c == '\f' || c == '\r' || c == '\n')
-		return (1);
-	return (0);
-}
-
 // Check if character is a digit
 int	ft_isdigit(int c)
 {
@@ -37,7 +28,7 @@ int	ft_atoi(const char *str)
 	j = 0;
 	res = 0;
 	sign = 1;
-	while (escape_whitespaces(str[j]))
+	while ((str[j] >= 9 && str[j] <= 13) || str[j] == 32)
 		j++;
 	if (str[j] == '+' || str[j] == '-')
 	{
@@ -58,18 +49,19 @@ int	ft_atoi(const char *str)
 // Custom usleep function to pause execution for a specified duration
 void	ft_usleep(unsigned long long time)
 {
-	unsigned long long	sleep_time;
-
-	sleep_time = ft_time();
-	while (ft_time() - sleep_time < time)
-		usleep(100);
+	ft_usleep_until(ft_time() + time);
 }
 
 // Pause execution until an exact wall-clock target timestamp is reached
 void	ft_usleep_until(long long target)
 {
 	while (ft_time() < target)
-		usleep(100);
+	{
+		if (target - ft_time() > 2)
+			usleep(500);
+		else
+			usleep(0);
+	}
 }
 
 // Get current timestamp in milliseconds

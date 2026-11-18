@@ -34,25 +34,25 @@ int	check_philos(t_philo *info)
 {
 	int	i;
 
-	i = 0;
 	while (1)
 	{
 		pthread_mutex_lock(&info->sync);
-		if (ft_time() - info->philo[i].last_meal > info->t_die)
-			break ;
+		i = -1;
+		while (++i < info->n_philo)
+		{
+			if (ft_time() - info->philo[i].last_meal > info->t_die)
+			{
+				manage_philos(&info->philo[i], DIE);
+				return (0);
+			}
+		}
 		if (info->philo_eaft_time && is_finished(info))
 		{
 			pthread_mutex_unlock(&info->sync);
 			return (0);
 		}
 		pthread_mutex_unlock(&info->sync);
-		i++;
-		if (i > info->n_philo - 1)
-		{
-			usleep(500);
-			i = 0;
-		}
+		usleep(1000);
 	}
-	manage_philos(&info->philo[i], DIE);
 	return (0);
 }

@@ -36,14 +36,6 @@ static void	pick_fork(t_info *philo)
 	pthread_mutex_t	*first;
 	pthread_mutex_t	*second;
 
-	if (philo->left_fork == philo->right_fork)
-	{
-		pthread_mutex_lock(philo->left_fork);
-		manage_philos(philo, FORK_TAKEN);
-		ft_usleep(philo->t_die);
-		pthread_mutex_unlock(philo->left_fork);
-		return ;
-	}
 	if (philo->left_fork < philo->right_fork)
 	{
 		first = philo->left_fork;
@@ -68,8 +60,6 @@ static void	pick_fork(t_info *philo)
 void	eat(t_info *philo)
 {
 	pick_fork(philo);
-	if (philo->left_fork == philo->right_fork)
-		return ;
 	ft_usleep_until(philo->last_meal + philo->t_eat);
 	pthread_mutex_unlock(philo->left_fork);
 	pthread_mutex_unlock(philo->right_fork);
@@ -95,6 +85,6 @@ void	philo_think(t_info *philo)
 	{
 		think_time = (philo->t_eat * 2) - philo->t_sleep;
 		if (think_time > 0)
-			ft_usleep(think_time * 0.42);
+			ft_usleep(think_time * 0.5);
 	}
 }

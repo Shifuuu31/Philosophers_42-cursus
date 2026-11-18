@@ -253,72 +253,91 @@ The build system compiles with `-Wall -Wextra -Werror -pthread -O3 -Iinclude` an
 | Command | Action |
 |---|---|
 | `make` | Compiles the `philo` executable |
-| `make clean` | Removes compiled object files (`obj/`) |
-| `make fclean` | Removes object files and the `philo` executable |
+| `make clean` | Removes compiled object files (`obj/`) and temporary test logs |
+| `make fclean` | Performs `clean` and removes the `philo` binary |
 | `make re` | Performs a clean rebuild (`fclean` + `all`) |
-| `make test` | Runs the default fast automated test suite |
-| `make test-hard` | Runs the 21-case automated hard test suite ([tests/hard_tests.py](tests/hard_tests.py)) |
-| `make test-race` | Compiles with `-fsanitize=thread -g` and checks for data races |
-| `make test-dantonik-auto` | Runs automated mandatory tests with `42-philosophers-tester` |
-| `make test-dantonik-hardcore` | Runs hardcore evaluation test sets with `42-philosophers-tester` |
-| `make test-lazy-auto` | Runs automated death and meal limit checks with `LazyPhilosophersTester` |
-| `make test-alien` | Verifies timestamp ordering with `alientest_philosopher` |
-| `make test-all` | Runs `42-philosophers-tester`, `alientest_philosopher`, and the hard test suite |
+| `make test` | Runs the 25-case automated hard test suite ([tests/hard_tests.py](tests/hard_tests.py)) |
+| `make test-eval` | Runs official 42 evaluation sheet mandatory criteria (`42-philosophers-tester`) |
+| `make test-order` | Validates strictly monotonic timestamp sequencing (`alientest_philosopher`) |
+| `make test-race` | Audits data races and lock orders via LLVM ThreadSanitizer |
+| `make test-lazy-auto` | Runs automated death and meal threshold checks (`LazyPhilosophersTester`) |
+| `make test-all` | Orchestrates a complete sequential audit across all test suites |
 
 ---
 
 ## 9. Testing Suites & Verification
 
-### Built-in 21-Case Hard Tests Suite (`make test-hard`):
+### Built-in 25-Case Hard Tests Suite (`make test` or `make test-hard`):
 Our custom test runner validates:
-1. **Invalid Arguments**: 0 philosophers, negative numbers, non-numeric strings, excess parameters.
-2. **Single Philosopher Deadlock**: Confirms `./philo 1 800 200 200` takes one fork and dies at $\sim 800\text{ms}$ without hanging.
-3. **Death Timing Precision**: Verifies deaths occur within $< 15\text{ms}$ of target (e.g. `4 310 200 100`, `2 100 150 150`).
+1. **Invalid Arguments & Overflow**: 0 philosophers, negative numbers, overflow ($> \text{INT\_MAX}$), empty string, standalone signs, excess parameters.
+2. **Single Philosopher Deadlock**: Confirms `./philo 1 800 200 200` takes one fork and dies at $801\text{ms}$ without hanging or double-locking.
+3. **Death Timing Precision**: Verifies starvation deaths occur within $< 15\text{ms}$ of target (e.g. `4 310 200 100`, `2 100 150 150`).
 4. **Meal Count Completion**: Verifies clean exit without premature deaths when all philosophers hit the meal limit.
-5. **High Concurrency Stress**: Sustained execution under 50, 100, and 198 philosophers.
+5. **High Concurrency Stress**: Sustained execution under 50, 100, and 198 concurrent threads with mutex startup barrier.
 6. **ThreadSanitizer Integration**: Automatic compilation and execution with `-fsanitize=thread` to verify zero data races and zero lock-order inversions.
 
 ```text
-======================================================
-       42 PHILOSOPHERS - HARD TEST SUITE              
-======================================================
+╔═════════════════════════════════════════════════════════════════════════════╗
+║                   42 PHILOSOPHERS - HARD TEST SUITE                         ║
+║         Thread Synchronization, Timing Precision & Concurrency Audit        ║
+╚═════════════════════════════════════════════════════════════════════════════╝
 
-[1. Argument & Edge Parsing Checks]
- [PASS] No arguments (Error detected gracefully)
- [PASS] Negative philosopher count (Error detected gracefully)
- [PASS] Zero philosophers (Error detected gracefully)
- [PASS] Negative time to die (Error detected gracefully)
- [PASS] Zero time to eat (Error detected gracefully)
- [PASS] Negative meals (Error detected gracefully)
- [PASS] Zero meals (Error detected gracefully)
- [PASS] Non-numeric argument (Error detected gracefully)
- [PASS] Too many arguments (Error detected gracefully)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 1. Argument Parsing & Edge-Case Validation                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+  No arguments provided                        (none)                   0.00s  PASS ✓  (graceful error)
+  Negative philosopher count                   -5 800 200 200           0.00s  PASS ✓  (graceful error)
+  Zero philosopher count                       0 800 200 200            0.00s  PASS ✓  (graceful error)
+  Negative time-to-die                         4 -800 200 200           0.00s  PASS ✓  (graceful error)
+  Zero time-to-eat                             4 800 0 200              0.00s  PASS ✓  (graceful error)
+  Negative meal threshold                      4 800 200 200 -1         0.00s  PASS ✓  (graceful error)
+  Zero meal threshold                          4 800 200 200 0          0.00s  PASS ✓  (graceful error)
+  Non-numeric alphanumeric argument            4 800 200 abc            0.00s  PASS ✓  (graceful error)
+  Too many arguments (> 5 parameters)          4 800 200 200 5 6        0.00s  PASS ✓  (graceful error)
+  Integer overflow value (> INT_MAX)           99999999999999 800..     0.00s  PASS ✓  (graceful error)
+  Empty string parameter                        800 200 200             0.00s  PASS ✓  (graceful error)
+  Standalone sign parameter                    + 800 200 200            0.00s  PASS ✓  (graceful error)
+  Supported positive '+' prefix                +4 410 200 200 1         0.40s  PASS ✓
 
-[2. Single Philosopher (Deadlock & Death Test)]
- [PASS] Single philo (1 800 200 200) (0.80s)
- [PASS] Single philo fast (1 300 100 100) (0.31s)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 2. Single Philosopher (Deadlock & Double-Lock Prevention)                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+  Single philo standard death                  1 800 200 200            0.80s  PASS ✓
+  Single philo fast starvation                 1 300 100 100            0.31s  PASS ✓
 
-[3. Death Timing Precision Tests]
- [PASS] Tight death timing (4 310 200 100) (0.32s)
- [PASS] Immediate starvation (2 100 150 150) (0.11s)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 3. Death Timing Precision (< 15ms tolerance)                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+  Tight margin death timing                    4 310 200 100            0.31s  PASS ✓
+  Immediate starvation                         2 100 150 150            0.10s  PASS ✓
 
-[4. Meal Limit & Clean Termination Tests]
- [PASS] 4 philos, 3 meals (4 410 200 200 3) (1.21s)
- [PASS] 5 philos, 5 meals (5 800 200 200 5) (2.67s)
- [PASS] 2 philos, 4 meals (2 800 200 200 4) (1.62s)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 4. Meal Threshold & Clean Process Termination                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+  Even 4 philosophers, 3 meals                 4 410 200 200 3          1.20s  PASS ✓
+  Odd 5 philosophers, 5 meals                  5 800 200 200 5          2.61s  PASS ✓
+  Pair 2 philosophers, 4 meals                 2 800 200 200 4          1.60s  PASS ✓
 
-[5. Concurrency Stress Tests (High Thread Counts)]
- [PASS] 50 philos (50 800 100 100 3) (1.18s)
- [PASS] 100 philos (100 800 100 100 2) (0.47s)
- [PASS] 198 philos (198 800 100 100 2) (0.82s)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 5. Concurrency Stress (High Thread Counts)                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+  50 philosopher threads, 3 meals              50 800 100 100 3         0.62s  PASS ✓
+  100 philosopher threads, 2 meals             100 800 100 100 2        0.42s  PASS ✓
+  198 philosopher threads, 2 meals             198 800 100 100 2        0.71s  PASS ✓
 
-[6. ThreadSanitizer Concurrency & Data Race Check]
- [PASS] TSan clean on 4 philosophers (no data race)
- [PASS] TSan clean on death scenario (no data race)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 6. ThreadSanitizer Concurrency & Data-Race Audit                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+  TSan Multi-Thread Concurrency                4 410 200 200 2          1.84s  PASS ✓  (zero races)
+  TSan Death Termination                       1 200 100 100            1.23s  PASS ✓  (zero races)
 
-======================================================
-ALL 21 HARD TESTS PASSED SUCCESSFULLY!
-======================================================
+╔═════════════════════════════════════════════════════════════════════════════╗
+║                              TEST RUN SUMMARY                               ║
+╠═════════════════════════════════════════════════════════════════════════════╣
+║  Total Tests Executed : 25          │  Elapsed Time : 14.53s
+║  Passed Cases         : 25          │  Success Rate : 100.0%
+║  Failed Cases         : 0           │  Architecture : POSIX pthreads
+╚═════════════════════════════════════════════════════════════════════════════╝
 ```
 
 ---
