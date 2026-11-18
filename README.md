@@ -287,7 +287,7 @@ The build system compiles with `-Wall -Wextra -Werror -pthread -O3 -Iinclude` an
 | `make test-eval` | Runs official 42 evaluation sheet mandatory criteria (`42-philosophers-tester`) |
 | `make test-order` | Validates strictly monotonic timestamp sequencing (`alientest_philosopher`) |
 | `make test-race` | Audits data races and lock orders via LLVM ThreadSanitizer |
-| `make test-lazy-auto` | Runs automated death and meal threshold checks (`LazyPhilosophersTester`) |
+| `make test-lazy-auto` | Runs complete automated suite across all 16 die and no-die test cases (`LazyPhilosophersTester`) |
 | `make test-all` | Orchestrates a complete sequential audit across all test suites |
 
 ---

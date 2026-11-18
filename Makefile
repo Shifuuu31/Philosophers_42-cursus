@@ -54,6 +54,7 @@ $(LAZY_DIR):
 		echo "Cloning LazyPhilosophersTester..."; \
 		rm -rf $(LAZY_DIR); \
 		git clone https://github.com/MichelleJiam/LazyPhilosophersTester.git $(LAZY_DIR); \
+		sed -i 's|#!/usr/bin/python|#!/usr/bin/env python3|g' $(LAZY_DIR)/PhilosophersChecker.py 2>/dev/null || true; \
 	fi
 
 $(ALIEN_DIR):
@@ -106,8 +107,11 @@ test-lazy: all $(LAZY_DIR)
 	@cd $(LAZY_DIR) && ./test.sh ../$(NAME)
 
 test-lazy-auto: all $(LAZY_DIR)
-	@echo "\033[1;36m=== Running LazyPhilosophersTester (Die Tests Auto) ===\033[0m"
-	@cd $(LAZY_DIR) && (printf "1\n\n\n\n\nq\n" | ./test.sh ../$(NAME))
+	@echo "\033[1;36m┌─────────────────────────────────────────────────────────────┐\033[0m"
+	@echo "\033[1;36m│ \033[1;37mRunning LazyPhilosophersTester Automated Suite (All 16 Tests)\033[1;36m│\033[0m"
+	@echo "\033[1;36m└─────────────────────────────────────────────────────────────┘\033[0m"
+	@sed -i 's|#!/usr/bin/python|#!/usr/bin/env python3|g' $(LAZY_DIR)/PhilosophersChecker.py 2>/dev/null || true
+	@cd $(LAZY_DIR) && python3 -c 'import subprocess; s = "0" + ("\n" * 10) + "2\n" + ("\n" * 6); subprocess.run(["./test.sh", "../$(NAME)"], input=s, text=True)'
 
 test-dantonik: all $(DANTONIK_DIR)
 	@cd $(DANTONIK_DIR) && ./test.sh ../$(NAME)
