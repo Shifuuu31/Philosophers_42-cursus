@@ -1,26 +1,43 @@
+# ==============================================================================
+# 42 Philosophers — .gitignore
+# ==============================================================================
+
 # Binaries & Executables
 philo
 philo_bonus
+philo_tsan
 *.a
 *.so
 *.out
 
 # Object files & build artifacts
+obj/
 *.o
 *.dSYM/
 
-# Editor & IDE files
+# Python & test caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Editor & IDE configurations
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS artifacts
+# Operating System artifacts
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Logs & temp files
+# Tester outputs, logs & temporary files
 *.log
 tempfile
 fails/
