@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   philo.c                                            :+:      :+:    :+:   */
+/*   monitor.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: asaadane <asaadane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/02 23:03:57 by asaadane          #+#    #+#             */
-/*   Updated: 2024/01/02 23:23:48 by asaadane         ###   ########.fr       */
+/*   Updated: 2026/11/18 19:43:00 by asaadane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-// check if all philos have finished eating
+// Check if all philosophers have completed the required number of meals
 static int	is_finished(t_philo *info)
 {
 	int	i;
@@ -29,7 +29,7 @@ static int	is_finished(t_philo *info)
 	return (0);
 }
 
-// monitoring philos and handle their actions
+// Supervisor loop monitoring death times and meal completions
 int	check_philos(t_philo *info)
 {
 	int	i;
@@ -41,7 +41,10 @@ int	check_philos(t_philo *info)
 		if (ft_time() - info->philo[i].last_meal > info->t_die)
 			break ;
 		if (info->philo_eaft_time && is_finished(info))
+		{
+			pthread_mutex_unlock(&info->sync);
 			return (0);
+		}
 		pthread_mutex_unlock(&info->sync);
 		i++;
 		if (i > info->n_philo - 1)

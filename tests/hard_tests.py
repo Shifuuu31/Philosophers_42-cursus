@@ -110,8 +110,8 @@ def run_tsan_check():
     print(f"\n{CYAN}{BOLD}[6. ThreadSanitizer Concurrency & Data Race Check]{RESET}")
     tsan_bin = "./philo_tsan"
     compile_cmd = [
-        "cc", "-Wall", "-Wextra", "-Werror", "-pthread", "-fsanitize=thread", "-g",
-        "main.c", "parsing.c", "philo.c", "routine_act.c", "tools.c", "-o", tsan_bin
+        "cc", "-Wall", "-Wextra", "-Werror", "-pthread", "-fsanitize=thread", "-g", "-Iinclude",
+        "src/main.c", "src/parsing.c", "src/monitor.c", "src/routine.c", "src/utils.c", "-o", tsan_bin
     ]
     res = subprocess.run(compile_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     if res.returncode != 0:

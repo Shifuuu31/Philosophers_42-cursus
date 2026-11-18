@@ -62,19 +62,28 @@ typedef struct s_philo
 	int				philo_eaft_time;
 	int				err;
 	long long		start;
-	struct s_info	*philo;
+	t_info			*philo;
 	pthread_mutex_t	*forks;
 	pthread_mutex_t	sync;
 }	t_philo;
 
+// Parsing & Validation
 int			parsing(char **args, int args_num, t_philo *target);
+
+// Routine & Actions
+void		eat(t_info *philo);
+void		philo_sleep(t_info *philo);
+void		philo_think(t_info *philo);
+void		manage_philos(t_info *philo, t_moves action);
+
+// Monitor & State
+int			check_philos(t_philo *info);
+
+// Utilities & Time
+int			ft_isdigit(int c);
 int			ft_atoi(const char *str);
 long long	ft_time(void);
-int			check_philos(t_philo *info);
 void		ft_usleep(unsigned long long time);
-void		manage_philos(struct s_info *philo, t_moves action);
-void		eat(struct s_info *philo);
-void		philo_sleep(struct s_info *philo);
-void		philo_think(struct s_info *philo);
+void		clean_data(t_philo *info);
 
 #endif

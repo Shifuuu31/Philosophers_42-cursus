@@ -1,19 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   routine_act.c                                      :+:      :+:    :+:   */
+/*   routine.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: asaadane <asaadane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/02 23:04:03 by asaadane          #+#    #+#             */
-/*   Updated: 2024/01/02 23:25:40 by asaadane         ###   ########.fr       */
+/*   Updated: 2026/11/18 19:43:00 by asaadane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-// announce actions of philos
-void	manage_philos(struct s_info *philo, t_moves action)
+// Announce actions of philosophers with mutex synchronization
+void	manage_philos(t_info *philo, t_moves action)
 {
 	if (action == DIE)
 		printf(DEATH, ft_time() - philo->start, philo->id);
@@ -35,8 +35,8 @@ void	manage_philos(struct s_info *philo, t_moves action)
 	}
 }
 
-// pick up forks for eating
-static void	pick_fork(struct s_info *philo)
+// Pick up forks with resource ordering hierarchy to prevent deadlocks
+static void	pick_fork(t_info *philo)
 {
 	pthread_mutex_t	*first;
 	pthread_mutex_t	*second;
@@ -57,8 +57,8 @@ static void	pick_fork(struct s_info *philo)
 	manage_philos(philo, FORK_TAKEN);
 }
 
-// philo eat
-void	eat(struct s_info *philo)
+// Philosopher eat routine
+void	eat(t_info *philo)
 {
 	pick_fork(philo);
 	manage_philos(philo, EAT);
@@ -70,15 +70,15 @@ void	eat(struct s_info *philo)
 	pthread_mutex_unlock(philo->right_fork);
 }
 
-// philo sleep
-void	philo_sleep(struct s_info *philo)
+// Philosopher sleep routine
+void	philo_sleep(t_info *philo)
 {
 	manage_philos(philo, SLEEP);
 	ft_usleep(philo->t_sleep);
 }
 
-// philo philo_think
-void	philo_think(struct s_info *philo)
+// Philosopher think routine
+void	philo_think(t_info *philo)
 {
 	manage_philos(philo, THINK);
 }

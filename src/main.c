@@ -6,30 +6,53 @@
 /*   By: asaadane <asaadane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/02 23:03:47 by asaadane          #+#    #+#             */
-/*   Updated: 2024/01/02 23:12:52 by asaadane         ###   ########.fr       */
+/*   Updated: 2026/11/18 19:43:00 by asaadane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-// philosopher routine function
+// Philosopher thread routine: staggered startup then eat-sleep-think cycle
 static void	*thread_routine(void *philo)
 {
-	if (((struct s_info *)philo)->id % 2 == 1)
+	t_info	*p;
+
+	p = (t_info *)philo;
+	if (p->id % 2 == 1)
 	{
-		philo_think((struct s_info *)philo);
-		ft_usleep(((struct s_info *)philo)->t_eat);
+		philo_think(p);
+		ft_usleep(p->t_eat);
 	}
 	while (1)
 	{
-		eat((struct s_info *)philo);
-		philo_sleep((struct s_info *)philo);
-		philo_think((struct s_info *)philo);
+		eat(p);
+		philo_sleep(p);
+		philo_think(p);
 	}
 	return (NULL);
 }
 
-// err messages
+// Free resources and destroy mutexes
+void	clean_data(t_philo *info)
+{
+	int	i;
+
+	if (!info)
+		return ;
+	if (info->forks)
+	{
+		i = -1;
+		while (++i < info->n_philo)
+			pthread_mutex_destroy(&info->forks[i]);
+		free(info->forks);
+	}
+	pthread_mutex_destroy(&info->sync);
+	if (info->philo)
+		free(info->philo);
+	free(info);
+}
+
+// Error manager
 static int	error_manager(int code)
 {
 	if (code == 1)
@@ -39,7 +62,7 @@ static int	error_manager(int code)
 	return (0);
 }
 
-// Main 
+// Main entry point
 int	main(int argc, char **argv)
 {
 	int			i;
@@ -50,20 +73,20 @@ int	main(int argc, char **argv)
 	if (!info)
 		return (error_manager(1));
 	if (!parsing(argv, argc - 1, info))
-		return (0);
+		return (clean_data(info), 0);
 	thread_id = (pthread_t *)malloc(info->n_philo * sizeof(pthread_t));
 	if (!thread_id)
-		return (error_manager(1));
+		return (clean_data(info), error_manager(1));
 	i = -1;
 	info->start = ft_time();
 	while (++i < info->n_philo)
 	{
 		info->philo[i].start = info->start;
 		info->philo[i].last_meal = info->start;
-		info->err = pthread_create(&thread_id[i],
-				NULL, thread_routine, &info->philo[i]);
+		info->err = pthread_create(&thread_id[i], NULL, thread_routine,
+				&info->philo[i]);
 		if (info->err)
-			return (error_manager(2));
+			return (free(thread_id), clean_data(info), error_manager(2));
 	}
 	free(thread_id);
 	return (check_philos(info));

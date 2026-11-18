@@ -6,13 +6,13 @@
 /*   By: asaadane <asaadane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/02 23:03:53 by asaadane          #+#    #+#             */
-/*   Updated: 2024/01/02 23:21:34 by asaadane         ###   ########.fr       */
+/*   Updated: 2026/11/18 19:43:00 by asaadane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-// error messages based on error codes and arguments
+// Error messages based on error codes and arguments
 static int	err_msg(int code, int args_num)
 {
 	if (!code)
@@ -30,12 +30,7 @@ static int	err_msg(int code, int args_num)
 	return (0);
 }
 
-static int	ft_isdigit(int c)
-{
-	return (c >= '0' && c <= '9');
-}
-
-// init data for philos
+// Initialize mutexes and state per philosopher
 static void	init_data(t_philo *target)
 {
 	int	i;
@@ -61,7 +56,7 @@ static void	init_data(t_philo *target)
 	}
 }
 
-// load info into struct from  arguments
+// Load parsed values into main structure and allocate arrays
 static void	load_info_to_struct(char **args, t_philo *target)
 {
 	target->n_philo = ft_atoi(args[0]);
@@ -80,14 +75,14 @@ static void	load_info_to_struct(char **args, t_philo *target)
 	}
 	target->forks = (pthread_mutex_t *)
 		malloc(target->n_philo * sizeof(pthread_mutex_t));
-	target->philo = (struct s_info *)
-		malloc(target->n_philo * sizeof(struct s_info));
+	target->philo = (t_info *)
+		malloc(target->n_philo * sizeof(t_info));
 	if (!target->forks || !target->philo)
 		return ;
 	init_data(target);
 }
 
-// Function to parse arguments and init struct
+// Parse command line arguments and initialize structures
 int	parsing(char **args, int args_num, t_philo *target)
 {
 	int	j;

@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   tools.c                                            :+:      :+:    :+:   */
+/*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: asaadane <asaadane@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/02 23:04:06 by asaadane          #+#    #+#             */
-/*   Updated: 2024/01/02 23:29:51 by asaadane         ###   ########.fr       */
+/*   Updated: 2026/11/18 19:43:00 by asaadane         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-// check whitespaces
+// Check whitespaces
 static int	escape_whitespaces(char c)
 {
 	if (c == 32 || c == '\t' || c == '\v'
@@ -21,8 +21,8 @@ static int	escape_whitespaces(char c)
 	return (0);
 }
 
-// check if is digit
-static int	ft_isdigit(int c)
+// Check if character is a digit
+int	ft_isdigit(int c)
 {
 	return (c >= '0' && c <= '9');
 }
@@ -55,7 +55,7 @@ int	ft_atoi(const char *str)
 	return (i * sign);
 }
 
-// custom usleep function to pause execution for a specified time
+// Custom usleep function to pause execution for a specified duration
 void	ft_usleep(unsigned long long time)
 {
 	unsigned long long	sleep_time;
@@ -65,7 +65,7 @@ void	ft_usleep(unsigned long long time)
 		usleep(200);
 }
 
-// get current time in milliseconds
+// Get current timestamp in milliseconds
 long long	ft_time(void)
 {
 	struct timeval	timestamp;

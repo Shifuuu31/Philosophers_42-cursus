@@ -1,36 +1,46 @@
-SRCS = main.c \
-	   parsing.c \
-	   philo.c \
-	   routine_act.c \
-	   tools.c
-
-OBJS			= $(SRCS:.c=.o)
-HDRS			= philo.h
-CC				= cc
-RM				= rm -f
-CFLAGS			= -Wall -Wextra -Werror -pthread -O3
 NAME			= philo
+
+CC				= cc
+CFLAGS			= -Wall -Wextra -Werror -pthread -O3 -Iinclude
+RM				= rm -f
+
+SRCDIR			= src
+OBJDIR			= obj
+INCDIR			= include
+
+SRCS			= $(SRCDIR)/main.c \
+				  $(SRCDIR)/parsing.c \
+				  $(SRCDIR)/monitor.c \
+				  $(SRCDIR)/routine.c \
+				  $(SRCDIR)/utils.c
+
+OBJS			= $(SRCS:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
+HDRS			= $(INCDIR)/philo.h
 
 all:			shifuuu $(NAME)
 				@echo "\033[1m\033[32mCompilation has completed\033[37m"
 
-$(NAME) : $(OBJS) ${HDRS}
-	${CC} ${CFLAGS} ${OBJS} -o $(NAME)
+$(NAME):		$(OBJS) $(HDRS)
+				$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
+
+$(OBJDIR)/%.o:	$(SRCDIR)/%.c $(HDRS) | $(OBJDIR)
+				$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJDIR):
+				@mkdir -p $(OBJDIR)
 
 clean:
 				-clear
-				$(RM) $(OBJS) 
+				$(RM) -r $(OBJDIR)
 				@echo "\033[1m\033[31mObject files removed\033[37m"
 
-fclean:			
-				-clear
-				$(RM) $(OBJS)
+fclean:			clean
 				$(RM) $(NAME)
-				@echo "\033[1m\033[31mThe executable file and object files have been successfully removed\033[37m"
+				@echo "\033[1m\033[31mThe executable file has been successfully removed\033[37m"
 
 re:				fclean all
 
-# Testers
+# Testers Integration
 LAZY_DIR		= LazyPhilosophersTester
 ALIEN_DIR		= alientest_philosopher
 DANTONIK_DIR	= 42-philosophers-tester
