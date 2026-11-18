@@ -61,7 +61,7 @@ void	ft_usleep(unsigned long long time)
 	unsigned long long	sleep_time;
 
 	sleep_time = ft_time();
-	while (ft_time() - sleep_time != time)
+	while (ft_time() - sleep_time < time)
 		usleep(200);
 }
 

@@ -38,7 +38,7 @@ typedef enum e_moves
 	DIE
 }	t_moves;
 
-struct s_info
+typedef struct s_info
 {
 	int					id;
 	int					t_eat;

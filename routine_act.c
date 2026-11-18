@@ -38,9 +38,22 @@ void	manage_philos(struct s_info *philo, t_moves action)
 // pick up forks for eating
 static void	pick_fork(struct s_info *philo)
 {
-	pthread_mutex_lock(philo->left_fork);
+	pthread_mutex_t	*first;
+	pthread_mutex_t	*second;
+
+	if (philo->left_fork < philo->right_fork)
+	{
+		first = philo->left_fork;
+		second = philo->right_fork;
+	}
+	else
+	{
+		first = philo->right_fork;
+		second = philo->left_fork;
+	}
+	pthread_mutex_lock(first);
 	manage_philos(philo, FORK_TAKEN);
-	pthread_mutex_lock(philo->right_fork);
+	pthread_mutex_lock(second);
 	manage_philos(philo, FORK_TAKEN);
 }
 
