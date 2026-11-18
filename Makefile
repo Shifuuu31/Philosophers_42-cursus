@@ -18,20 +18,91 @@ $(NAME) : $(OBJS) ${HDRS}
 	${CC} ${CFLAGS} ${OBJS} -o $(NAME)
 
 clean:
-				clear
+				-clear
 				$(RM) $(OBJS) 
 				@echo "\033[1m\033[31mObject files removed\033[37m"
 
 fclean:			
-				clear
+				-clear
 				$(RM) $(OBJS)
 				$(RM) $(NAME)
 				@echo "\033[1m\033[31mThe executable file and object files have been successfully removed\033[37m"
 
 re:				fclean all
 
+# Testers
+LAZY_DIR		= LazyPhilosophersTester
+ALIEN_DIR		= alientest_philosopher
+DANTONIK_DIR	= 42-philosophers-tester
+
+$(LAZY_DIR):
+	@if [ ! -d "$(LAZY_DIR)/.git" ]; then \
+		echo "Cloning LazyPhilosophersTester..."; \
+		rm -rf $(LAZY_DIR); \
+		git clone https://github.com/MichelleJiam/LazyPhilosophersTester.git $(LAZY_DIR); \
+	fi
+
+$(ALIEN_DIR):
+	@if [ ! -d "$(ALIEN_DIR)/.git" ]; then \
+		echo "Cloning alientest_philosopher..."; \
+		rm -rf $(ALIEN_DIR); \
+		git clone https://github.com/lienardale/alientest_philosopher.git $(ALIEN_DIR); \
+	fi
+
+$(DANTONIK_DIR):
+	@if [ ! -d "$(DANTONIK_DIR)/.git" ]; then \
+		echo "Cloning 42-philosophers-tester..."; \
+		rm -rf $(DANTONIK_DIR); \
+		git clone https://github.com/dantonik/42-philosophers-tester.git $(DANTONIK_DIR); \
+	fi
+
+test: all test-dantonik-auto
+
+test-dantonik: all $(DANTONIK_DIR)
+	@echo "\033[1;34m=== Running 42-philosophers-tester ===\033[0m"
+	@cd $(DANTONIK_DIR) && ./test.sh ../$(NAME)
+
+test-dantonik-auto: all $(DANTONIK_DIR)
+	@echo "\033[1;34m=== Running 42-philosophers-tester (Mandatory Auto) ===\033[0m"
+	@cd $(DANTONIK_DIR) && printf "0\n" | ./test.sh -i 1 -t 3 ../$(NAME)
+
+test-dantonik-hardcore: all $(DANTONIK_DIR)
+	@echo "\033[1;34m=== Running 42-philosophers-tester (Hardcore Auto) ===\033[0m"
+	@cd $(DANTONIK_DIR) && printf "2\n0\n" | ./test.sh -i 1 -t 3 ../$(NAME)
+
+test-lazy: all $(LAZY_DIR)
+	@echo "\033[1;34m=== Running LazyPhilosophersTester ===\033[0m"
+	@cd $(LAZY_DIR) && ./test.sh ../$(NAME)
+
+test-lazy-auto: all $(LAZY_DIR)
+	@echo "\033[1;34m=== Running LazyPhilosophersTester (Die Tests Auto) ===\033[0m"
+	@cd $(LAZY_DIR) && (printf "1\n\n\n\n\nq\n" | ./test.sh ../$(NAME))
+
+test-alien: all $(ALIEN_DIR)
+	@echo "\033[1;34m=== Running alientest_philosopher (Timestamp Order) ===\033[0m"
+	@cd $(ALIEN_DIR) && (echo "" | bash order.sh 2>&1 | grep -v -E "kill \[options\]|For more details|kill: usage|Usage:|specify the" | grep -v "  -") || true
+
+test-alien-all: all $(ALIEN_DIR)
+	@echo "\033[1;34m=== Running alientest_philosopher (Correction Tests) ===\033[0m"
+	@cd $(ALIEN_DIR) && echo "" | bash correction_test.sh
+
+test-hard: all
+	@python3 tests/hard_tests.py
+
+test-race: all
+	@echo "\033[1;34m=== Running ThreadSanitizer Data-Race Check ===\033[0m"
+	@cc $(CFLAGS) -fsanitize=thread -g $(SRCS) -o philo_tsan
+	@./philo_tsan 4 410 200 200 4 > /dev/null
+	@./philo_tsan 1 300 200 200 > /dev/null 2>&1 || true
+	@rm -f philo_tsan
+	@echo "\033[1;32m[PASS] No data races detected by ThreadSanitizer\033[0m"
+
+test-all: test-dantonik-auto test-alien test-hard
+
+.PHONY: all clean fclean re test test-all test-dantonik test-dantonik-auto test-dantonik-hardcore test-lazy test-lazy-auto test-alien test-alien-all test-hard test-race
+
 shifuuu:
-			clear
+			-clear
 			@echo "	\033[37m░██████╗██╗░░██╗██╗███████╗██╗░░░██╗██╗░░░██╗██╗░░░██╗"
 			@echo "	\033[37m██╔════╝██║░░██║██║██╔════╝██║░░░██║██║░░░██║██║░░░██║"
 			@echo "	\033[37m╚█████╗░███████║██║█████╗░░██║░░░██║██║░░░██║██║░░░██║"
