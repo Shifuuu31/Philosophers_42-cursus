@@ -11,6 +11,10 @@ An optimal, high-performance multithreaded simulation resolving Edsger Dijkstra'
   <img src="https://img.shields.io/badge/Concurrency-pthreads%20%26%20mutexes-orange.svg" alt="Concurrency: pthreads & mutexes">
 </p>
 
+<p align="center">
+  <img src="./assets/philosophers_architecture.jpg" alt="Dining Philosophers Concurrent Architecture" width="100%">
+</p>
+
 ---
 
 ## Project Information
@@ -107,6 +111,17 @@ flowchart TD
         T5 --> T1
     end
 ```
+
+### Architecture Breakdown (from the Header Infographic):
+- **Philosopher Nodes (`P1`–`P5`)**: Independent POSIX worker threads executing concurrent state machines.
+- **Shared Mutex Forks (Padlocks)**: Each pair of adjacent philosophers shares a mutex fork. When `P1` acquires both adjacent forks, `P2` and `P5` are blocked from eating until `P1` transitions to `SLEEP`.
+- **Monitor Thread (Supervisor Telemetry)**: The main thread runs `check_philos()`, reading `last_meal` and `eating_time` telemetry to enforce the `time_to_die` deadline and detect simulation completion.
+- **Resource Hierarchy (`Min Fork ID First`)**: Both forks are compared by memory address, acquiring `min(left_fork, right_fork)` first to completely eliminate circular wait deadlocks.
+- **Deterministic 4-Step Cycle**:
+  1. **THINK**: Reflects on table state; applies dynamic think delay on odd philosopher counts to prevent sandwich starvation.
+  2. **PICK FORKS**: Acquires the lower-addressed mutex first, then the higher-addressed mutex, followed by synchronized logging.
+  3. **EAT**: Sets `last_meal = ft_time()` atomically with the second fork acquisition; pauses execution for exact duration `t_eat` via driftless `ft_usleep_until`.
+  4. **SLEEP**: Releases both fork mutexes immediately to neighbors, logs sleep state, and pauses for `t_sleep` until the next cycle.
 
 ### Mutex Allocation:
 1. **Fork Mutexes (`pthread_mutex_t forks[N]`)**: Exactly one mutex per fork to protect against concurrent access.
