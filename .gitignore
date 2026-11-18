@@ -1,0 +1,27 @@
+# Binaries & Executables
+philo
+philo_bonus
+*.a
+*.so
+*.out
+
+# Object files & build artifacts
+*.o
+*.dSYM/
+
+# Editor & IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Logs & temp files
+*.log
+tempfile
+fails/
+42-philosophers-tester/
