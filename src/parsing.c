@@ -43,6 +43,7 @@ static void	init_data(t_philo *target)
 	while (++i < target->n_philo)
 	{
 		target->philo[i].id = i + 1;
+		target->philo[i].n_philo = target->n_philo;
 		if (!i)
 			target->philo[i].left_fork = &target->forks[target->n_philo - 1];
 		else
@@ -73,6 +74,11 @@ static void	load_info_to_struct(char **args, t_philo *target)
 		target->nbr_meals = 1;
 		target->philo_eaft_time = FALSE;
 	}
+	target->forks = NULL;
+	target->philo = NULL;
+	if (target->nbr_meals <= 0 || target->n_philo <= 0
+		|| target->t_die <= 0 || target->t_eat <= 0 || target->t_sleep <= 0)
+		return ;
 	target->forks = (pthread_mutex_t *)
 		malloc(target->n_philo * sizeof(pthread_mutex_t));
 	target->philo = (t_info *)
@@ -93,10 +99,17 @@ int	parsing(char **args, int args_num, t_philo *target)
 	i = 0;
 	while (++i < args_num + 1)
 	{
-		j = -1;
-		while (args[i][++j])
+		j = 0;
+		if (args[i][j] == '+')
+			j++;
+		if (!args[i][j])
+			return (err_msg(1, 0));
+		while (args[i][j])
+		{
 			if (!ft_isdigit(args[i][j]))
 				return (err_msg(1, 0));
+			j++;
+		}
 	}
 	load_info_to_struct(args + 1, target);
 	if (target->nbr_meals <= 0 || target->n_philo <= 0

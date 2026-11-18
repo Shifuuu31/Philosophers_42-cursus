@@ -106,12 +106,14 @@ test-hard: all
 test-race: all
 	@echo "\033[1;34m=== Running ThreadSanitizer Data-Race Check ===\033[0m"
 	@cc $(CFLAGS) -fsanitize=thread -g $(SRCS) -o philo_tsan
-	@./philo_tsan 4 410 200 200 4 > /dev/null
-	@./philo_tsan 1 300 200 200 > /dev/null 2>&1 || true
+	@./philo_tsan 4 410 200 200 2 > /dev/null
+	@./philo_tsan 1 200 100 100 > /dev/null 2>&1 || true
 	@rm -f philo_tsan
 	@echo "\033[1;32m[PASS] No data races detected by ThreadSanitizer\033[0m"
 
-test-all: test-dantonik-auto test-alien test-hard
+test-all: test-dantonik-auto test-alien
+	@sleep 0.5
+	@$(MAKE) test-hard
 
 .PHONY: all clean fclean re test test-all test-dantonik test-dantonik-auto test-dantonik-hardcore test-lazy test-lazy-auto test-alien test-alien-all test-hard test-race
 

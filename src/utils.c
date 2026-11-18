@@ -30,12 +30,12 @@ int	ft_isdigit(int c)
 // Custom atoi function to convert string to integer
 int	ft_atoi(const char *str)
 {
-	int	i;
-	int	j;
-	int	sign;
+	long long	res;
+	int			j;
+	int			sign;
 
 	j = 0;
-	i = 0;
+	res = 0;
 	sign = 1;
 	while (escape_whitespaces(str[j]))
 		j++;
@@ -47,12 +47,12 @@ int	ft_atoi(const char *str)
 	}
 	while (ft_isdigit(str[j]))
 	{
-		i += str[j] - '0';
+		res = (res * 10) + (str[j] - '0');
+		if (res > 2147483647)
+			return (-1);
 		j++;
-		if (ft_isdigit(str[j]))
-			i *= 10;
 	}
-	return (i * sign);
+	return ((int)(res * sign));
 }
 
 // Custom usleep function to pause execution for a specified duration
@@ -62,7 +62,14 @@ void	ft_usleep(unsigned long long time)
 
 	sleep_time = ft_time();
 	while (ft_time() - sleep_time < time)
-		usleep(200);
+		usleep(100);
+}
+
+// Pause execution until an exact wall-clock target timestamp is reached
+void	ft_usleep_until(long long target)
+{
+	while (ft_time() < target)
+		usleep(100);
 }
 
 // Get current timestamp in milliseconds

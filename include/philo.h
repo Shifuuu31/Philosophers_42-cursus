@@ -41,6 +41,7 @@ typedef enum e_moves
 typedef struct s_info
 {
 	int					id;
+	int					n_philo;
 	int					t_eat;
 	int					t_sleep;
 	int					t_die;
@@ -84,6 +85,7 @@ int			ft_isdigit(int c);
 int			ft_atoi(const char *str);
 long long	ft_time(void);
 void		ft_usleep(unsigned long long time);
+void		ft_usleep_until(long long target);
 void		clean_data(t_philo *info);
 
 #endif

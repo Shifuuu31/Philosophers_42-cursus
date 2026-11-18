@@ -49,8 +49,7 @@ int	check_philos(t_philo *info)
 		i++;
 		if (i > info->n_philo - 1)
 		{
-			if (info->t_die > 200)
-				usleep(20);
+			usleep(500);
 			i = 0;
 		}
 	}

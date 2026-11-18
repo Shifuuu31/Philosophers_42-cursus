@@ -196,11 +196,8 @@ Philosophers_42-cursus/
 │   ├── monitor.c                # Main supervisor death & meal monitoring loop
 │   ├── routine.c                # Philo lifecycle: eat, sleep, think, fork picking
 │   └── utils.c                  # ft_atoi, ft_isdigit, ft_time, ft_usleep
-├── tests/
-│   └── hard_tests.py            # Comprehensive 21-case automated test suite
-├── LazyPhilosophersTester/      # Submodule: Lazy Philosophers semi-auto tester
-├── alientest_philosopher/       # Submodule: Alien timestamp order & edge tester
-└── 42-philosophers-tester/      # Submodule: Evaluation sheet automated test suite
+└── tests/
+    └── hard_tests.py            # Comprehensive 21-case automated test suite
 ```
 
 ---

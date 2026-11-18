@@ -22,11 +22,6 @@ void	manage_philos(t_info *philo, t_moves action)
 		pthread_mutex_lock(philo->sync);
 		if (action == FORK_TAKEN)
 			printf(TAKING_FORKS, ft_time() - philo->start, philo->id);
-		else if (action == EAT)
-		{
-			printf(EATING, ft_time() - philo->start, philo->id);
-			philo->last_meal = ft_time();
-		}
 		else if (action == SLEEP)
 			printf(SLEEPING, ft_time() - philo->start, philo->id);
 		else if (action == THINK)
@@ -41,6 +36,14 @@ static void	pick_fork(t_info *philo)
 	pthread_mutex_t	*first;
 	pthread_mutex_t	*second;
 
+	if (philo->left_fork == philo->right_fork)
+	{
+		pthread_mutex_lock(philo->left_fork);
+		manage_philos(philo, FORK_TAKEN);
+		ft_usleep(philo->t_die);
+		pthread_mutex_unlock(philo->left_fork);
+		return ;
+	}
 	if (philo->left_fork < philo->right_fork)
 	{
 		first = philo->left_fork;
@@ -54,31 +57,44 @@ static void	pick_fork(t_info *philo)
 	pthread_mutex_lock(first);
 	manage_philos(philo, FORK_TAKEN);
 	pthread_mutex_lock(second);
-	manage_philos(philo, FORK_TAKEN);
+	pthread_mutex_lock(philo->sync);
+	printf(TAKING_FORKS, ft_time() - philo->start, philo->id);
+	philo->last_meal = ft_time();
+	printf(EATING, philo->last_meal - philo->start, philo->id);
+	pthread_mutex_unlock(philo->sync);
 }
 
 // Philosopher eat routine
 void	eat(t_info *philo)
 {
 	pick_fork(philo);
-	manage_philos(philo, EAT);
-	ft_usleep(philo->t_eat);
+	if (philo->left_fork == philo->right_fork)
+		return ;
+	ft_usleep_until(philo->last_meal + philo->t_eat);
+	pthread_mutex_unlock(philo->left_fork);
+	pthread_mutex_unlock(philo->right_fork);
 	pthread_mutex_lock(philo->sync);
 	philo->eating_time++;
 	pthread_mutex_unlock(philo->sync);
-	pthread_mutex_unlock(philo->left_fork);
-	pthread_mutex_unlock(philo->right_fork);
 }
 
 // Philosopher sleep routine
 void	philo_sleep(t_info *philo)
 {
 	manage_philos(philo, SLEEP);
-	ft_usleep(philo->t_sleep);
+	ft_usleep_until(philo->last_meal + philo->t_eat + philo->t_sleep);
 }
 
 // Philosopher think routine
 void	philo_think(t_info *philo)
 {
+	long long	think_time;
+
 	manage_philos(philo, THINK);
+	if (philo->n_philo % 2 != 0)
+	{
+		think_time = (philo->t_eat * 2) - philo->t_sleep;
+		if (think_time > 0)
+			ft_usleep(think_time * 0.42);
+	}
 }

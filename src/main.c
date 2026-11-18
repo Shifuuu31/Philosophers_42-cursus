@@ -18,10 +18,16 @@ static void	*thread_routine(void *philo)
 	t_info	*p;
 
 	p = (t_info *)philo;
-	if (p->id % 2 == 1)
+	if (p->n_philo == 1)
+	{
+		manage_philos(p, FORK_TAKEN);
+		ft_usleep(p->t_die);
+		return (NULL);
+	}
+	if (p->id % 2 == 0)
 	{
 		philo_think(p);
-		ft_usleep(p->t_eat);
+		ft_usleep_until(p->start + (p->t_eat / 2));
 	}
 	while (1)
 	{
